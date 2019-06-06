@@ -1,0 +1,35 @@
+Ansible relies on an inventory for base functionality. While inventories can be very simple, they have been designed to be robust. This exercise walks through how to use some of the more advanced features available within an Ansible inventory. 
+
+1. Create the `inventory` File in `/home/ansible/`
+# touch /home/ansible/inventory
+
+2. Configure the Host Group `media` to Contain `media1` and `media2`
+echo "[media]" >> /home/ansible/inventory
+echo "media1" >> /home/ansible/inventory
+echo "media2" >> /home/ansible/inventory
+
+3. Define Variables for `media` with Their Accompanying Values
+
+mkdir /home/ansible/group_vars
+touch /home/ansible/group_vars/media
+
+echo "media_content: /var/media/content/" >> /home/ansible/group_vars/media
+echo "media_index: /opt/media/mediaIndex" >> /home/ansible/group_vars/media
+
+4. Configure the Host Group `webservers` to Contain the Hosts `web1` and `web2`
+
+echo "[webservers]" >> /home/ansible/inventory
+echo "web1" >> /home/ansible/inventory
+echo "web2" >> /home/ansible/inventory
+
+5. Define Variables for `webservers` with Their Accompanying Values
+
+touch /home/ansible/group_vars/webservers
+echo "httpd_webroot: /var/www/" >> /home/ansible/group_vars/webservers
+echo "httpd_config: /etc/httpd/" >> /home/ansible/group_vars/webservers
+
+6. Define the Variable `script_files` Specifically for `web1`, Setting Its Value to `/usr/local/scripts`
+
+mkdir /home/ansible/host_vars
+touch /home/ansible/host_vars/web1
+echo "script_files: /usr/local/scripts" >> /home/ansible/host_vars/web1
