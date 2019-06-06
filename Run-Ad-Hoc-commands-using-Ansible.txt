@@ -1,0 +1,306 @@
+
+
+1. Create the User Accounts Noted in `/home/ansible/userlist.txt`
+
+ansible cloudsystems -b -m user -a "name=consultant"
+ansible cloudsystems -b -m user -a "name=supervisor"
+
+Where :
+
+>> cloudsystems is the group of nodes in /etc/ansible/hosts file
+
+[cloudsystems]
+amankumbare2c.mylabserver.com
+
+>> -b, --become        run operations with become (does not imply password
+                        prompting)
+
+>> -m  Module
+
+>> -a arguments to respective module
+
+# ansible cloudsystems -b -m user -a "name=supervisor"
+amankumbare2c.mylabserver.com | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "comment": "",
+    "create_home": true,
+    "group": 1009,
+    "home": "/home/supervisor",
+    "name": "supervisor",
+    "shell": "/bin/bash",
+    "state": "present",
+    "system": false,
+    "uid": 1008
+}
+
+
+2. Place Key Files in the Correct Location, `/home/$USER/.ssh/authorized_keys`, on Hosts in `dbsystems`
+
+
+# ansible cloudsystems -b -m file -a "path=/home/consultant/.ssh state=directory owner=consultant group=consultant mode=0755"
+
+amankumbare2c.mylabserver.com | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "gid": 1008,
+    "group": "consultant",
+    "mode": "0755",
+    "owner": "consultant",
+    "path": "/home/consultant/.ssh",
+    "secontext": "unconfined_u:object_r:ssh_home_t:s0",
+    "size": 6,
+    "state": "directory",
+    "uid": 1007
+}
+
+
+# ansible cloudsystems -b -m copy -a "src=/home/ansible/keys/consultant/authorized_keys dest=/home/consultant/.ssh/authorized_keys mode=0600 owner=consultant group=consultant"
+
+±±±
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: If you are using a module and expect the file to exist on the remote, see the remote_src option
+amankumbare2c.mylabserver.com | FAILED! => {
+    "changed": false,
+    "msg": "Could not find or access '/home/ansible/keys/consultant/authorized_keys' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"
+}
+±±±±
+
+# mkdir -p /home/ansible/keys/consultant/
+# touch /home/ansible/keys/consultant/authorized_keys
+
+# ansible cloudsystems -b -m copy -a "src=/home/ansible/keys/consultant/authorized_keys dest=/home/consultant/.ssh/authorized_keys mode=0600 owner=consultant group=consultant"
+amankumbare2c.mylabserver.com | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "dest": "/home/consultant/.ssh/authorized_keys",
+    "gid": 1008,
+    "group": "consultant",
+    "md5sum": "d41d8cd98f00b204e9800998ecf8427e",
+    "mode": "0600",
+    "owner": "consultant",
+    "secontext": "unconfined_u:object_r:ssh_home_t:s0",
+    "size": 0,
+    "src": "/home/ansible/.ansible/tmp/ansible-tmp-1559819745.61-252790504890963/source",
+    "state": "file",
+    "uid": 1007
+}
+
+
+$ ansible cloudsystems -b -m file -a "path=/home/supervisor/.ssh state=directory owner=supervisor group=supervisor mode=0755"
+amankumbare2c.mylabserver.com | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "gid": 1009,
+    "group": "supervisor",
+    "mode": "0755",
+    "owner": "supervisor",
+    "path": "/home/supervisor/.ssh",
+    "secontext": "unconfined_u:object_r:ssh_home_t:s0",
+    "size": 6,
+    "state": "directory",
+    "uid": 1008
+}
+
+
+
+
+$ ansible cloudsystems -b -m copy -a "src=/home/ansible/keys/supervisor/authorized_keys dest=/home/supervisor/.ssh/authorized_keys mode=0600 owner=supervisor group=supervisor"
+
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: If you are using a module and expect the file to exist on the remote, see the remote_src option
+amankumbare2c.mylabserver.com | FAILED! => {
+    "changed": false,
+    "msg": "Could not find or access '/home/ansible/keys/supervisor/authorized_keys' on the Ansible Controller.\nIf you are using a module and expect the file to exist on the remote, see the remote_src option"
+}
+
+
+$ mkdir -p /home/ansible/keys/supervisor
+
+$ touch /home/ansible/keys/supervisor/authorized_keys
+
+ansible cloudsystems -b -m copy -a "src=/home/ansible/keys/supervisor/authorized_keys dest=/home/supervisor/.ssh/authorized_keys mode=0600 owner=supervisor group=supervisor"
+amankumbare2c.mylabserver.com | CHANGED => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": true,
+    "checksum": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "dest": "/home/supervisor/.ssh/authorized_keys",
+    "gid": 1009,
+    "group": "supervisor",
+    "md5sum": "d41d8cd98f00b204e9800998ecf8427e",
+    "mode": "0600",
+    "owner": "supervisor",
+    "secontext": "unconfined_u:object_r:ssh_home_t:s0",
+    "size": 0,
+    "src": "/home/ansible/.ansible/tmp/ansible-tmp-1559819877.35-141736273471585/source",
+    "state": "file",
+    "uid": 1008
+}
+
+
+3. Ensure `auditd` Is Enabled and Running on All Hosts
+
+# ansible all -b -m service -a "name=auditd state=started enabled=yes"
+
+amankumbare2c.mylabserver.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "enabled": true,
+    "name": "auditd",
+    "state": "started",
+    "status": {
+        "ActiveEnterTimestamp": "Thu 2019-06-06 05:34:32 EDT",
+        "ActiveEnterTimestampMonotonic": "11767740",
+        "ActiveExitTimestampMonotonic": "0",
+        "ActiveState": "active",
+        "After": "systemd-tmpfiles-setup.service system.slice systemd-journald.socket local-fs.target",
+        "AllowIsolate": "no",
+        "AmbientCapabilities": "0",
+        "AssertResult": "yes",
+        "AssertTimestamp": "Thu 2019-06-06 05:34:31 EDT",
+        "AssertTimestampMonotonic": "11574849",
+        "Before": "sysinit.target crond.service systemd-update-utmp.service shutdown.target",
+        "BlockIOAccounting": "no",
+        "BlockIOWeight": "18446744073709551615",
+        "CPUAccounting": "no",
+        "CPUQuotaPerSecUSec": "infinity",
+        "CPUSchedulingPolicy": "0",
+        "CPUSchedulingPriority": "0",
+        "CPUSchedulingResetOnFork": "no",
+        "CPUShares": "18446744073709551615",
+        "CanIsolate": "no",
+        "CanReload": "no",
+        "CanStart": "yes",
+        "CanStop": "no",
+        "CapabilityBoundingSet": "18446744073709551615",
+        "ConditionResult": "yes",
+        "ConditionTimestamp": "Thu 2019-06-06 05:34:31 EDT",
+        "ConditionTimestampMonotonic": "11574804",
+        "Conflicts": "shutdown.target",
+        "ControlGroup": "/system.slice/auditd.service",
+        "ControlPID": "0",
+        "DefaultDependencies": "no",
+        "Delegate": "no",
+        "Description": "Security Auditing Service",
+        "DevicePolicy": "auto",
+        "Documentation": "man:auditd(8) https://github.com/linux-audit/audit-documentation",
+        "ExecMainCode": "0",
+        "ExecMainExitTimestampMonotonic": "0",
+        "ExecMainPID": "3626",
+        "ExecMainStartTimestamp": "Thu 2019-06-06 05:34:31 EDT",
+        "ExecMainStartTimestampMonotonic": "11733880",
+        "ExecMainStatus": "0",
+        "ExecStart": "{ path=/sbin/auditd ; argv[]=/sbin/auditd ; ignore_errors=no ; start_time=[Thu 2019-06-06 05:34:31 EDT] ; stop_time=[Thu 2019-06-06 05:34:31 EDT] ; pid=3625 ; code=exited ; status=0 }",
+        "ExecStartPost": "{ path=/sbin/augenrules ; argv[]=/sbin/augenrules --load ; ignore_errors=yes ; start_time=[Thu 2019-06-06 05:34:31 EDT] ; stop_time=[Thu 2019-06-06 05:34:32 EDT] ; pid=3630 ; code=exited ; status=0 }",
+        "FailureAction": "none",
+        "FileDescriptorStoreMax": "0",
+        "FragmentPath": "/usr/lib/systemd/system/auditd.service",
+        "GuessMainPID": "yes",
+        "IOScheduling": "0",
+        "Id": "auditd.service",
+        "IgnoreOnIsolate": "no",
+        "IgnoreOnSnapshot": "no",
+        "IgnoreSIGPIPE": "yes",
+        "InactiveEnterTimestampMonotonic": "0",
+        "InactiveExitTimestamp": "Thu 2019-06-06 05:34:31 EDT",
+        "InactiveExitTimestampMonotonic": "11575361",
+        "JobTimeoutAction": "none",
+        "JobTimeoutUSec": "0",
+        "KillMode": "control-group",
+        "KillSignal": "15",
+        "LimitAS": "18446744073709551615",
+        "LimitCORE": "18446744073709551615",
+        "LimitCPU": "18446744073709551615",
+        "LimitDATA": "18446744073709551615",
+        "LimitFSIZE": "18446744073709551615",
+        "LimitLOCKS": "18446744073709551615",
+        "LimitMEMLOCK": "65536",
+        "LimitMSGQUEUE": "819200",
+        "LimitNICE": "0",
+        "LimitNOFILE": "4096",
+        "LimitNPROC": "7093",
+        "LimitRSS": "18446744073709551615",
+        "LimitRTPRIO": "0",
+        "LimitRTTIME": "18446744073709551615",
+        "LimitSIGPENDING": "7093",
+        "LimitSTACK": "18446744073709551615",
+        "LoadState": "loaded",
+        "MainPID": "3626",
+        "MemoryAccounting": "no",
+        "MemoryCurrent": "18446744073709551615",
+        "MemoryLimit": "18446744073709551615",
+        "MountFlags": "0",
+        "Names": "auditd.service",
+        "NeedDaemonReload": "no",
+        "Nice": "0",
+        "NoNewPrivileges": "no",
+        "NonBlocking": "no",
+        "NotifyAccess": "none",
+        "OOMScoreAdjust": "0",
+        "OnFailureJobMode": "replace",
+        "PIDFile": "/var/run/auditd.pid",
+        "PermissionsStartOnly": "no",
+        "PrivateDevices": "no",
+        "PrivateNetwork": "no",
+        "PrivateTmp": "no",
+        "ProtectHome": "no",
+        "ProtectSystem": "no",
+        "RefuseManualStart": "no",
+        "RefuseManualStop": "yes",
+        "RemainAfterExit": "no",
+        "Restart": "no",
+        "RestartUSec": "100ms",
+        "Result": "success",
+        "RootDirectoryStartOnly": "no",
+        "RuntimeDirectoryMode": "0755",
+        "SameProcessGroup": "no",
+        "SecureBits": "0",
+        "SendSIGHUP": "no",
+        "SendSIGKILL": "yes",
+        "Slice": "system.slice",
+        "StandardError": "inherit",
+        "StandardInput": "null",
+        "StandardOutput": "journal",
+        "StartLimitAction": "none",
+        "StartLimitBurst": "5",
+        "StartLimitInterval": "10000000",
+        "StartupBlockIOWeight": "18446744073709551615",
+        "StartupCPUShares": "18446744073709551615",
+        "StatusErrno": "0",
+        "StopWhenUnneeded": "no",
+        "SubState": "running",
+        "SyslogLevelPrefix": "yes",
+        "SyslogPriority": "30",
+        "SystemCallErrorNumber": "0",
+        "TTYReset": "no",
+        "TTYVHangup": "no",
+        "TTYVTDisallocate": "no",
+        "TasksAccounting": "no",
+        "TasksCurrent": "18446744073709551615",
+        "TasksMax": "18446744073709551615",
+        "TimeoutStartUSec": "1min 30s",
+        "TimeoutStopUSec": "1min 30s",
+        "TimerSlackNSec": "50000",
+        "Transient": "no",
+        "Type": "forking",
+        "UMask": "0022",
+        "UnitFilePreset": "enabled",
+        "UnitFileState": "enabled",
+        "WantedBy": "multi-user.target",
+        "Wants": "system.slice",
+        "WatchdogTimestamp": "Thu 2019-06-06 05:34:31 EDT",
+        "WatchdogTimestampMonotonic": "11733901",
+        "WatchdogUSec": "0"
+    }
+}
